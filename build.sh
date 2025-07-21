@@ -1,36 +1,27 @@
 #!/usr/bin/env bash
 
-echo "🔑 Installing AWS CLI..."
+# Fail on any error
+set -e
 
-# Download AWS CLI v2 installer for Linux
+echo "Installing AWS CLI..."
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-
-# Unzip it
 unzip awscliv2.zip
-
-# Install it
 sudo ./aws/install
 
-# Verify
-aws --version
-
-echo "✅ AWS CLI installed!"
-
-echo "🔑 Getting fresh AWS CodeArtifact token..."
-
+echo "Fetching new CODEARTIFACT_AUTH_TOKEN..."
 export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
-  --domain $CODEARTIFACT_DOMAIN \
-  --domain-owner $CODEARTIFACT_DOMAIN_OWNER \
-  --region $AWS_DEFAULT_REGION \
+  --domain shared-nye-domain \
+  --domain-owner 243016416530 \
+  --region ap-south-1 \
   --query authorizationToken \
   --output text)
 
-echo "✅ Token fetched! Running npm install..."
+echo "Setting npm registry..."
+npm config set //shared-nye-domain-243016416530.d.codeartifact.ap-south-1.amazonaws.com/npm/nye-shared-ui/:_authToken=$CODEARTIFACT_AUTH_TOKEN
+npm config set registry https://shared-nye-domain-243016416530.d.codeartifact.ap-south-1.amazonaws.com/npm/nye-shared-ui/
 
+echo "Running npm install..."
 npm install
 
-echo "✅ Building Strapi..."
-
+echo "Running npm run build..."
 npm run build
-
-echo "🎉 Build done!"
