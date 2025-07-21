@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -e
 
-# ✅ Use built-in curl & unzip — no apt-get
-echo "Installing AWS CLI..."
-
+echo "Downloading AWS CLI..."
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
-./aws/install
+
+# ✅ Install AWS CLI locally inside ./aws-cli directory
+./aws/install -i ./aws-cli -b ./aws-cli/bin
+
+echo "Adding local AWS CLI to PATH..."
+export PATH=$PWD/aws-cli/bin:$PATH
 
 echo "Fetching CodeArtifact token..."
 export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
