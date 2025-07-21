@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-# Install unzip & curl (without sudo!)
-apt-get update
-apt-get install -y unzip curl
+# ✅ Use built-in curl & unzip — no apt-get
+echo "Installing AWS CLI..."
 
-# Install AWS CLI
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 ./aws/install
 
-# Fetch CodeArtifact token
+echo "Fetching CodeArtifact token..."
 export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
   --domain shared-nye-domain \
   --domain-owner 243016416530 \
@@ -18,13 +16,13 @@ export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
   --query authorizationToken \
   --output text)
 
-# Configure npm to use CodeArtifact
+echo "Logging in to CodeArtifact..."
 aws codeartifact login --tool npm \
   --repository nye-shared-ui \
   --domain shared-nye-domain \
   --domain-owner 243016416530 \
   --region ap-south-1
 
-# Install & build
+echo "Running npm install & build..."
 npm install
 npm run build
