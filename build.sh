@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-
-# Fail on any error
 set -e
 
-echo "Installing AWS CLI..."
+# Install unzip & curl (without sudo!)
+apt-get update
+apt-get install -y unzip curl
+
+# Install AWS CLI
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
-sudo ./aws/install
+./aws/install
 
-echo "Fetching new CODEARTIFACT_AUTH_TOKEN..."
+# Fetch CodeArtifact token
 export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
   --domain shared-nye-domain \
   --domain-owner 243016416530 \
@@ -16,12 +18,13 @@ export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
   --query authorizationToken \
   --output text)
 
-echo "Setting npm registry..."
-npm config set //shared-nye-domain-243016416530.d.codeartifact.ap-south-1.amazonaws.com/npm/nye-shared-ui/:_authToken=$CODEARTIFACT_AUTH_TOKEN
-npm config set registry https://shared-nye-domain-243016416530.d.codeartifact.ap-south-1.amazonaws.com/npm/nye-shared-ui/
+# Configure npm to use CodeArtifact
+aws codeartifact login --tool npm \
+  --repository nye-shared-ui \
+  --domain shared-nye-domain \
+  --domain-owner 243016416530 \
+  --region ap-south-1
 
-echo "Running npm install..."
+# Install & build
 npm install
-
-echo "Running npm run build..."
 npm run build
